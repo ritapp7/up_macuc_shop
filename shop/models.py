@@ -17,8 +17,8 @@ class User(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-    
-class Meta(models.Model):
+
+class Order(models.Model):
     ST = [
         ("Оформлен", "Оформлен"),
         ("Отправлен", "Отправлен"),
@@ -33,7 +33,79 @@ class Meta(models.Model):
 
     id_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     status = models.CharField("Статус заказа", max_length=100, choices=ST)
-    price = models.DecimalField("Цена", )
+    price = models.DecimalField("Цена", decimal_places=2, max_digits=10)  
+    date = models.DateField("Дата заказа")
+    delivery_address = models.TextField("Адрес доставки")
+    payment_method = models.CharField("Способ оплаты", max_length=20, choices=PM)
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+    def __str__(self):
+        return f"Заказ #{self.id} - {self.id_user}"
+
+class Category(models.Model): 
+    name = models.CharField("Название категории", max_length=20)
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
+
+    def __str__(self):
+        return self.name
+
+class Manufacturer(models.Model):
+    name = models.CharField("Название производителя", max_length=50)
+    country = models.CharField("Страна", max_length=50)
+
+    class Meta:
+        verbose_name = "Производитель"
+        verbose_name_plural = "Производители"
+
+    def __str__(self):
+        return self.name
+
+class Product(models.Model):
+    name = models.CharField("Название Товара", max_length=50)
+    id_category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Категория") 
+    id_manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, verbose_name="Производитель")
+    description = models.TextField("Описание")
+    price = models.DecimalField("Цена", decimal_places=2, max_digits=10) 
+    
+   
+    class Meta:
+        verbose_name = "Товар"
+        verbose_name_plural = "Товары"
+
+    def __str__(self):
+        return self.name
+
+class Position(models.Model):
+    id_order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="Заказ")
+    id_product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Товар")
+    quantity = models.IntegerField("Количество")
+    unit_price = models.DecimalField("Цена за единицу", decimal_places=2, max_digits=10)  
+
+    class Meta:
+        verbose_name = "Позиция"
+        verbose_name_plural = "Позиции"
+
+    def __str__(self):
+        return f"{self.id_product} x {self.quantity}"
+
+class Review(models.Model):
+    id_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    id_product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Товар")
+    comment = models.TextField("Комментарий")  
+    date = models.DateField("Дата создания")
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+
+    def __str__(self):
+        return f"Отзыв от {self.id_user} на {self.id_product}"
 
 
     
